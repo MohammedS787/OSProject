@@ -2,46 +2,40 @@ package com.example.osproject
 
 import android.content.Intent
 import android.location.Location
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.widget.Toast
-import androidx.core.app.ActivityCompat
-
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.appcompat.app.AppCompatActivity
+import com.example.osproject.databinding.ActivityMapsBinding
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MarkerOptions
-import com.example.osproject.databinding.ActivityMapsBinding
-import com.google.android.gms.maps.model.Marker
-import kotlinx.coroutines.flow.catch
-import kotlinx.coroutines.flow.onEach
-import kotlin.properties.Delegates
 
 class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
 
     private lateinit var mMap: GoogleMap
     private lateinit var binding: ActivityMapsBinding
-    private lateinit var locationClient: LocationClient
-    private var distance by Delegates.notNull<Float>()
+
+
+    private val permissionRequest = registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) {
+        // Permissions are guaranteed to be accepted. Starting service immediately
+        startService()
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        ActivityCompat.requestPermissions(
-            this,
+        permissionRequest.launch(
             arrayOf(
-                android.Manifest.permission.ACCESS_COARSE_LOCATION,
                 android.Manifest.permission.ACCESS_FINE_LOCATION,
-            ),
-            0
+                android.Manifest.permission.ACCESS_COARSE_LOCATION
+            )
         )
 
-        Intent(applicationContext, LocationService::class.java).apply {
-            action = LocationService.ACTION_START
-            startService(this)
-        }
+        startService()
 
         binding = ActivityMapsBinding.inflate(layoutInflater)
         setContentView(binding.root)
@@ -95,5 +89,12 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         }
 
         return loc1.distanceTo(loc2)
+    }
+
+    private fun startService() {
+        Intent(applicationContext, LocationService::class.java).apply {
+            action = LocationService.ACTION_START
+            startService(this)
+        }
     }
 }
