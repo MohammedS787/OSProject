@@ -7,6 +7,7 @@ import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import com.example.osproject.databinding.ActivityMapsBinding
+import com.example.osproject.extension.animateFadeVisibility
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
@@ -21,12 +22,13 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
 
 
     private val permissionRequest = registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) {
-        // Permissions are guaranteed to be accepted. Starting service immediately
-        startService()
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        binding = ActivityMapsBinding.inflate(layoutInflater)
+        setContentView(binding.root)
+        setListeners()
 
         permissionRequest.launch(
             arrayOf(
@@ -34,11 +36,6 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                 android.Manifest.permission.ACCESS_COARSE_LOCATION
             )
         )
-
-        startService()
-
-        binding = ActivityMapsBinding.inflate(layoutInflater)
-        setContentView(binding.root)
 
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         val mapFragment = supportFragmentManager
@@ -48,6 +45,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
 
     override fun onMapReady(googleMap: GoogleMap) {
         mMap = googleMap
+        setupMapStyle(mMap)
 
         // Add a marker in Mansoura and move the camera
         val mansoura = LatLng(31.037933, 31.381523)
@@ -68,13 +66,17 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         }
     }
 
+    private fun setListeners() {
+        binding.cardViewAlarm.setOnClickListener {
+            startService()
+            it.animateFadeVisibility(false)
+        }
+    }
+
     private fun addMarkerAndShowCoordinates(latLng: LatLng) {
         mMap.addMarker(MarkerOptions().position(latLng).title("Selected Location"))
-        val latitude = latLng.latitude
-        val longitude = latLng.longitude
-        Toast.makeText(this,
-            "Latitude: $latitude, Longitude: $longitude",
-        Toast.LENGTH_SHORT).show()
+
+        binding.cardViewAlarm.animateFadeVisibility(true)
     }
 
     private fun calculateDistanceInMeters(latOne: Double, longOne: Double,
@@ -95,6 +97,24 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         Intent(applicationContext, LocationService::class.java).apply {
             action = LocationService.ACTION_START
             startService(this)
+        }
+    }
+
+    @Suppress("MissingPermission")
+    private fun setupMapStyle(map: GoogleMap) {
+        if (hasLocationPermission()) {
+            map.isMyLocationEnabled = true
+            map.uiSettings.isMyLocationButtonEnabled = true
+        }
+
+        map.uiSettings.apply {
+            isZoomGesturesEnabled = true
+            isScrollGesturesEnabled = true
+            isRotateGesturesEnabled = true
+            isTiltGesturesEnabled = true
+            isZoomControlsEnabled = true
+            isCompassEnabled = true
+            isMapToolbarEnabled = true
         }
     }
 }
