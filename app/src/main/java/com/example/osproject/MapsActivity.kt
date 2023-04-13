@@ -3,9 +3,9 @@ package com.example.osproject
 import android.content.Intent
 import android.location.Location
 import android.os.Bundle
-import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.widget.doOnTextChanged
 import com.example.osproject.databinding.ActivityMapsBinding
 import com.example.osproject.extension.animateFadeVisibility
 import com.google.android.gms.maps.CameraUpdateFactory
@@ -15,6 +15,13 @@ import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MarkerOptions
 
+/**
+ * TODO @Ahmed El Shaaamy
+ * RecyclerView is added in the Search bar, access it using binding.recyclerView
+ * Start searching on how to use RecyclerView
+ * You can use the following link to get started
+ * https://developer.android.com/guide/topics/ui/layout/recyclerview
+ */
 class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
 
     private lateinit var mMap: GoogleMap
@@ -70,6 +77,10 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         binding.cardViewAlarm.setOnClickListener {
             startService()
             it.animateFadeVisibility(false)
+        }
+
+        binding.editTextSearch.doOnTextChanged { text, _, _, _ ->
+            // TODO search for places using the text as a query @AHMEEED EL SHAAAMY
         }
     }
 
